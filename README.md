@@ -28,7 +28,7 @@ to the require section of your `composer.json` file.
 
 Basic Usage
 -----------
-Add the following to your config file. For yii2 advanced template, this could be placed in `console/config/main.php`.
+Add the following to your config file. For yii2 advanced template, this should be placed in `console/config/main.php`, for basic it should be in `config/console.php`.
 You can use another name then `backup` but you'll need to adjust the commands accordingly. 
 ```php
 'modules' => [
