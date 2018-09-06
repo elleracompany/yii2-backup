@@ -1,0 +1,34 @@
+{
+  "name": "ellera/yii2-backup",
+  "type": "yii2-extension",
+
+  "description": "Console backup for yii2 applications ",
+  "keywords": ["yii2", "backup", "console"],
+  "license": "MIT",
+  "support": {
+    "issues": "https://github.com/elleracompany/yii2-backup/issues",
+    "source": "https://github.com/elleracompany/yii2-backup"
+  },
+  "authors": [
+    {
+      "name": "Jørgen Ellingsen",
+      "email": "jorgen@ellera.no"
+    }
+  ],
+
+  "require": {
+    "yiisoft/yii2": "~2.0.0"
+  },
+
+  "autoload": {
+    "psr-4": {
+      "ellera\\backup\\": "src"
+    }
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://asset-packagist.org"
+    }
+  ]
+}
