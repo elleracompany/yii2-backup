@@ -29,10 +29,10 @@ class DefaultController extends Controller
 		$this->stdout("Commands:\n");
 		$this->stdout("--------------------------------------------------------------------\n", Console::FG_YELLOW);
 		$this->stdout($this->module->id."\t\t\t\t\tThis list\n", Console::FG_YELLOW);
-		$this->stdout($this->module->id."/create comment=\"Your comment\"\tCreates a new backup\n", Console::FG_YELLOW);
+		$this->stdout($this->module->id."/create \"Your comment\"\t\tCreates a new backup\n", Console::FG_YELLOW);
 		$this->stdout($this->module->id."/list \t\t\t\tLists all stored backups\n", Console::FG_YELLOW);
-		$this->stdout($this->module->id."/delete id=# \t\t\tDeletes the backup with that ID\n", Console::FG_YELLOW);
-		$this->stdout($this->module->id."/restore id=# \t\t\tRestores the backup with that ID\n", Console::FG_YELLOW);
+		$this->stdout($this->module->id."/delete # \t\t\tDeletes the backup with that ID\n", Console::FG_YELLOW);
+		$this->stdout($this->module->id."/restore # \t\t\tRestores the backup with that ID\n", Console::FG_YELLOW);
 		$this->stdout("--------------------------------------------------------------------\n", Console::FG_YELLOW);
 	}
 }

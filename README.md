@@ -1,5 +1,3 @@
-# Under Development
-This extension is under development and should not be installed.
 # Yii2-Backup
 Console backup for yii2 applications. 
 
@@ -44,7 +42,7 @@ You can use another name then `backup` but you'll need to adjust the commands ac
 Then migrate database migrations. This will create a table named `backup` in your database. 
 
 ```text
-php yii migrate/up --migrationPath=@vendor/ellera/yii2-backup/migrations
+php yii migrate/up --migrationPath=@vendor/ellera/yii2-backup/src/migrations
 ```
 
 When the migration is done, you're ready to backup your site. Use `php yii *command*` or `./yii *command*` with the commands from the following table:
@@ -60,9 +58,61 @@ When the migration is done, you're ready to backup your site. Use `php yii *comm
 ##### Manual: Create backup
 `php yii backup/create "Your Comment"`
 
+![Creating a backup](doc_images/create.png)
+
+##### Manual: List backups
+`php yii backup/list (# optional page number)`
+
+![Listing backups](doc_images/list.png)
+
+##### Manual: Restore backup
+`php yii backup/restore #`
+
+![Restore backup](doc_images/restore.png)
+
+This will create an additional backup of the state before the restore
+
+![List after restore](doc_images/list_after_restore.png)
+
+##### Manual: Delete backup
+`php yii backup/delete #`
+
+![Listing backups](doc_images/delete.png)
 
 Advanced  Usage
 ---------------
+##### Backing up files and folders
+You can backup as many locations as you'd like by adding them to the folders array. To create backups require read access to the folder and files, to restore requires write/delete access.
+The folders will be zipped and saved in the backup folder.
+```php
+'modules' => [
+    ...
+    'backup' => [
+        'class' => 'ellera\backup\Module',
+        'folders' => [
+            'images' => '@app/web/images'
+        ],
+    ]
+    ...
+]
+```
+
+##### Changing or adding database handlers
+You can backup as many databases as you'd like, but they have to be defined in your config as `yii\db\Connection`s. Add the connection name to the array (defautls to only `db`).
+```php
+'modules' => [
+    ...
+    'backup' => [
+        'class' => 'ellera\backup\Module',
+        'databases' => [
+            'db', 
+            'db2'
+        ],
+    ]
+    ...
+]
+```
+
 ##### Database Conflict
 If you already have a table named `backup`, create a table with your own migration and add `'table' => 'new_table_name'` to the configuration.
 The content of the table can be found in the [migration](src/migrations/m180828_154717_backup.php).
