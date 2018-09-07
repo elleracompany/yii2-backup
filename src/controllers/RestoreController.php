@@ -32,6 +32,11 @@ class RestoreController extends Controller
 	public function actionIndex($id)
 	{
 		$backup = Backup::findOne($id);
+		if(!$backup)
+		{
+			$this->stdout("\n  Backup {$id} was not found\n\n", Console::FG_RED);
+			exit(1);
+		}
 		$this->stdout("\nBackup {$id} - ".Yii::$app->formatter->asDatetime($backup->timestamp)."\n\n");
 
 		if(!empty(unserialize($backup->files))) {

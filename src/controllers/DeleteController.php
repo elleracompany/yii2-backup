@@ -36,8 +36,12 @@ class DeleteController extends Controller
 		{
 			$this->module->deleteDir($backup->path);
 			$backup->delete();
-			$this->stdout("Backup with ID {$id} deleted.\n", Console::FG_GREEN);
+			$this->stdout("\n  Backup with ID {$id} deleted.\n\n", Console::FG_GREEN);
 		}
-		else $this->stdout("Could not find backup with ID {$id}.\n", Console::FG_RED);
+		else
+		{
+			$this->stdout("\n  Backup {$id} was not found\n\n", Console::FG_RED);
+			exit(1);
+		}
 	}
 }
