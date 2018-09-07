@@ -30,6 +30,7 @@ Basic Usage
 -----------
 Add the following to your config file. For yii2 advanced template, this should be placed in `console/config/main.php`, for basic it should be in `config/console.php`.
 You can use another name then `backup` but you'll need to adjust the commands accordingly. 
+
 ```php
 'modules' => [
     ...
@@ -39,9 +40,10 @@ You can use another name then `backup` but you'll need to adjust the commands ac
     ...
 ]
 ```
+
 Then migrate database migrations. This will create a table named `backup` in your database. 
 
-```text
+```
 php yii migrate/up --migrationPath=@vendor/ellera/yii2-backup/src/migrations
 ```
 
@@ -84,6 +86,7 @@ Advanced  Usage
 ##### Backing up files and folders
 You can backup as many locations as you'd like by adding them to the folders array. To create backups require read access to the folder and files, to restore requires write/delete access.
 The folders will be zipped and saved in the backup folder.
+
 ```php
 'modules' => [
     ...
@@ -99,6 +102,7 @@ The folders will be zipped and saved in the backup folder.
 
 ##### Changing or adding database handlers
 You can backup as many databases as you'd like, but they have to be defined in your config as `yii\db\Connection`s. Add the connection name to the array (defautls to only `db`).
+
 ```php
 'modules' => [
     ...
@@ -116,6 +120,7 @@ You can backup as many databases as you'd like, but they have to be defined in y
 ##### Database Conflict
 If you already have a table named `backup`, create a table with your own migration and add `'table' => 'new_table_name'` to the configuration.
 The content of the table can be found in the [migration](src/migrations/m180828_154717_backup.php).
+
 ```php
 'modules' => [
     ...
@@ -126,6 +131,7 @@ The content of the table can be found in the [migration](src/migrations/m180828_
     ...
 ]
 ```
+
 ##### Change the default backup location
 If you want to store the backups in another directory, add `'path' => 'new/path'` to the config.
 
@@ -141,6 +147,7 @@ This variable is parsed trough `Yii::getAlias()` and defaults to `@app/_backup`.
     ...
 ]
 ```
+
 ##### Upload to remote server
 If you want redundant backup over several servers, this module supports `scp` over SSH.
 For this function to work, you need to have SSH keys in place and the user must have write access to the remote folder specified in the config.
