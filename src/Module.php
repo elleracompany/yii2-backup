@@ -80,6 +80,7 @@ class Module extends \yii\base\Module
 	/**
 	 * Register the module with the application
 	 * if it's a console instance.
+	 *
 	 * @param $app
 	 */
 	public function bootstrap($app)
@@ -279,6 +280,33 @@ class Module extends \yii\base\Module
 			$zip->close();
 			return $filename;
 		}
+	}
+
+	/**
+	 * Function invoked before restoring a backup
+	 * Can be extended and used for putting the application in
+	 * maintenance mode.
+	 *
+	 * If the function returns false, the restore function will abort
+	 *
+	 * @return bool
+	 */
+	public function beforeRestore(): bool
+	{
+		return true;
+	}
+
+	/**
+	 * Function invoked after a backup is restored
+	 * Should be used to reverse the actions in beforeRestore()
+	 *
+	 * If the function returns false, the operator will be notified
+	 *
+	 * @return bool
+	 */
+	public function afterRestore(): bool
+	{
+		return true;
 	}
 
 	/**
