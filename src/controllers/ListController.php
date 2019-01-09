@@ -64,5 +64,6 @@ class ListController extends Controller
 		$this->stdout("-----------------------------------------------------------------\n", Console::FG_YELLOW);
 		$this->stdout($pages->totalCount." Backups\t\t\t\tTotal size:\t".$this->module->formatBytes($size)."\n");
 		$this->stdout("-----------------------------------------------------------------\n", Console::FG_YELLOW);
+		$this->module->cronCleanUp();
 	}
 }

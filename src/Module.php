@@ -6,6 +6,7 @@ use ellera\backup\components\Methods;
 use Yii;
 use ellera\backup\models\Backup;
 use yii\base\InvalidConfigException;
+use yii\helpers\ArrayHelper;
 
 class Module extends \yii\base\Module
 {
@@ -309,6 +310,46 @@ class Module extends \yii\base\Module
 			}
 		}
 		return $i;
+	}
+
+	/**
+	 * @throws \Throwable
+	 * @throws \yii\db\StaleObjectException
+	 */
+	public function cronCleanUp()
+	{
+		if($this->automated_cleanup === false) {
+			return;
+		}
+		// Delete the backups with missing files
+		$missing_files = $this->cleanUp(false);
+
+		// Get all backups timestamps and IDs
+		$timestamps_to_id = ArrayHelper::map((new \yii\db\Query())
+			->select(['id', 'timestamp'])
+			->from($this->table)
+			->all(),'timestamp','id');
+
+		// Array of only timestamps
+		$timestamps = array_keys($timestamps_to_id);
+
+		if(array_key_exists('yearly', $this->automated_cleanup) && $this->automated_cleanup['yearly'] === true) {
+			$reference_time = new \DateTime();
+			$reference_time->setDate($reference_time->format('Y'), 1, 1);
+			$reference_time->setTime(0,0,0);
+
+			$reference_timestamp = $reference_time->getTimestamp();
+			$removable = array_filter(
+				$timestamps,
+				function ($value) use($reference_timestamp) {
+					return ($value > $reference_timestamp);
+				}
+			);
+
+			// TODO: Fix the functionality here
+			die(var_dump($removable));
+		}
+		var_dump($timestamps);
 	}
 
 	/**
