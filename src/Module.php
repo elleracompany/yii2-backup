@@ -66,6 +66,11 @@ class Module extends \yii\base\Module
 	public $dumped_databases = [];
 
 	/**
+	 * @var string datetime format for cron logs
+	 */
+	public $datetime_format = 'Y-m-d H:i:s';
+
+	/**
 	 * Initiate the module
 	 */
 	public function init()
@@ -80,6 +85,7 @@ class Module extends \yii\base\Module
 	/**
 	 * Register the module with the application
 	 * if it's a console instance.
+	 *
 	 * @param $app
 	 */
 	public function bootstrap($app)
@@ -96,7 +102,7 @@ class Module extends \yii\base\Module
 	 *
 	 * @return int
 	 */
-	public function folderSize($dir)
+	public function folderSize($dir) : int
 	{
 		// https://gist.github.com/eusonlito/5099936
 
@@ -107,7 +113,13 @@ class Module extends \yii\base\Module
 		return $size;
 	}
 
-	public function createBackup($comment)
+	/**
+	 * @param      $comment
+	 * @param bool $verbose
+	 *
+	 * @return Backup
+	 */
+	public function createBackup($comment, $verbose = true) : Backup
 	{
 		$path = Yii::getAlias($this->path.DIRECTORY_SEPARATOR.$this->timestamp);
 		if (!is_dir($path) && !mkdir($path,0777))
@@ -115,10 +127,10 @@ class Module extends \yii\base\Module
 
 		$raw_comment = explode('=', $comment);
 		$comment = end($raw_comment );
-		echo "    Starting backup...\n";
+		if($verbose) echo "    Starting backup...\n";
 		if(!empty($this->folders))
 		{
-			echo "    - Zipping folders...\n";
+			if($verbose) echo "    - Zipping folders...\n";
 
 			foreach ($this->folders as $name => $folder) {
 				$filename = $this->zipFolder($name, $folder, $path);
@@ -126,22 +138,22 @@ class Module extends \yii\base\Module
 					'src' => $filename,
 					'dst' => Yii::getAlias($folder)
 				];
-				echo "    - - $name\n";
+				if($verbose) echo "    - - $name\n";
 			}
 
-			echo "    - Folders zipped.\n";
+			if($verbose) echo "    - Folders zipped.\n";
 		}
 
 		if(!empty($this->databases))
 		{
-			echo "    - Dumping databases...\n";
+			if($verbose) echo "    - Dumping databases...\n";
 			foreach ($this->databases as $database)
 			{
-				echo "    - - $database\n";
+				if($verbose) echo "    - - $database\n";
 				$this->dumped_databases[$database] = $this->dumpDatabase($database, $path);
 			}
 
-			echo "    - Databases dumped.\n";
+			if($verbose) echo "    - Databases dumped.\n";
 		}
 		$backup = new Backup();
 		$backup->timestamp = $this->timestamp;
@@ -152,17 +164,18 @@ class Module extends \yii\base\Module
 		$backup->size = $this->folderSize($path);
 		if(!empty($this->servers))
 		{
-			echo "    - Uplading to backup-servers...\n";
+			if($verbose) echo "    - Uplading to backup-servers...\n";
 			foreach ( $this->servers as $server )
 			{
-				echo "    - - ".$server['host']."\n";
+				if($verbose) echo "    - - ".$server['host']."\n";
 				exec('ssh '.$server['user'].'@'.$server['host'].' \'mkdir -p '.$server['path'].DIRECTORY_SEPARATOR.$this->timestamp.'\'');
 				foreach ($this->zipped_files as $name => $file) exec('scp '.$file['src'].' '.$server['user'].'@'.$server['host'].':'.$server['path'].DIRECTORY_SEPARATOR.$this->timestamp);
 				foreach ($this->dumped_databases as $database) exec('scp '.$database.' '.$server['user'].'@'.$server['host'].':'.$server['path'].DIRECTORY_SEPARATOR.$this->timestamp);
 			}
-			echo "    - Upload complete.\n";
+			if($verbose) echo "    - Upload complete.\n";
 		}
-		echo "    Backup complete (".$this->formatBytes($backup->size).")\n";
+		if($verbose) echo "    Backup complete (".$this->formatBytes($backup->size).")\n";
+		else echo '['.date($this->datetime_format)."] Automated Backup Created (".$this->formatBytes($backup->size).")\n";
 		return $backup;
 	}
 
@@ -174,7 +187,8 @@ class Module extends \yii\base\Module
 	 *
 	 * @return string
 	 */
-	public function formatBytes($bytes, $precision = 2) {
+	public function formatBytes($bytes, $precision = 2) : string
+	{
 		$units = array('B', 'KB', 'MB', 'GB', 'TB');
 
 		$bytes = max($bytes, 0);
@@ -190,8 +204,11 @@ class Module extends \yii\base\Module
 	 * Delete folder and contents
 	 *
 	 * @param $dirPath
+	 *
+	 * @return bool
 	 */
-	public function deleteDir($dirPath) {
+	public function deleteDir($dirPath) : bool
+	{
 		if (! is_dir($dirPath)) {
 			throw new \InvalidArgumentException("$dirPath must be a directory");
 		}
@@ -206,7 +223,7 @@ class Module extends \yii\base\Module
 				unlink($file);
 			}
 		}
-		rmdir($dirPath);
+		return rmdir($dirPath);
 	}
 
 	/**
@@ -216,7 +233,7 @@ class Module extends \yii\base\Module
 	 *
 	 * @return string
 	 */
-	public function timeSince ($time)
+	public function timeSince ($time) : string
 	{
 		// https://stackoverflow.com/questions/2915864/php-how-to-find-the-time-elapsed-since-a-date-time#answer-2916189
 		$time = time() - $time; // to get the time since that moment
@@ -244,10 +261,11 @@ class Module extends \yii\base\Module
 	 *
 	 * @param $name
 	 * @param $folder
+	 * @param $path
 	 *
 	 * @return string
 	 */
-	private function zipFolder($name, $folder, $path)
+	private function zipFolder($name, $folder, $path) : string
 	{
 		if($path)
 		{
@@ -282,11 +300,41 @@ class Module extends \yii\base\Module
 	}
 
 	/**
+	 * Function invoked before restoring a backup
+	 * Can be extended and used for putting the application in
+	 * maintenance mode.
+	 *
+	 * If the function returns false, the restore function will abort
+	 *
+	 * @return bool
+	 */
+	public function beforeRestore(): bool
+	{
+		return true;
+	}
+
+	/**
+	 * Function invoked after a backup is restored
+	 * Should be used to reverse the actions in beforeRestore()
+	 *
+	 * If the function returns false, the operator will be notified
+	 *
+	 * @return bool
+	 */
+	public function afterRestore(): bool
+	{
+		return true;
+	}
+
+	/**
 	 * Dumping database to file
+	 *
+	 * @param $database_handle
+	 * @param $path
 	 *
 	 * @return string
 	 */
-	private function dumpDatabase($database_handle, $path)
+	private function dumpDatabase($database_handle, $path) : string
 	{
 		$database = Yii::$app->$database_handle->createCommand("SELECT DATABASE()")->queryScalar();
 		// https://stackoverflow.com/questions/6750531/using-a-php-file-to-generate-a-mysql-dump

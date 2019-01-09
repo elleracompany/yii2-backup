@@ -29,11 +29,23 @@ class CreateController extends Controller
 	 *
 	 * @param string $comment
 	 */
-	public function actionIndex($comment = "No comment")
+	public function actionIndex($comment = "No comment") : void
 	{
 		echo "\n  Creating backup...\n\n";
 		$backup = $this->module->createBackup($comment);
 		$backup->save();
 		$this->stdout("\n  Backup created.\n\n", Console::FG_GREEN);
+	}
+
+	/**
+	 * Crate a new backup
+	 * Non-interactive cron-job
+	 *
+	 * @param string $comment
+	 */
+	public function actionCron($comment = "Cron Job") : void
+	{
+		$backup = $this->module->createBackup($comment, false);
+		$backup->save();
 	}
 }

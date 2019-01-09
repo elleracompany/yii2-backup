@@ -28,8 +28,10 @@ class RestoreController extends Controller
 	 * Restore database and file-locations from backup with ID
 	 *
 	 * @param $id
+	 *
+	 * @throws \yii\base\InvalidConfigException
 	 */
-	public function actionIndex($id)
+	public function actionIndex($id) : void
 	{
 		$backup = Backup::findOne($id);
 		if(!$backup)
@@ -62,8 +64,15 @@ class RestoreController extends Controller
 
 		if(strtolower($answer) != 'y' && strtolower($answer) != 'yes')
 		{
-			echo "\n  Exiting...\n";
+			echo "\n  Exiting...\n\n";
 			exit(0);
+		}
+
+		if(!$this->module->beforeRestore())
+		{
+			$this->stdout("\n\n  [!!] beforeRestore() returned false.\n", Console::FG_RED);
+			echo "\n  Exiting...\n\n";
+			exit(1);
 		}
 
 		echo "\n  Creating pre-restore backup...\n\n";
@@ -114,6 +123,13 @@ class RestoreController extends Controller
 		$backup->save();
 		$pre->save();
 
+		if(!$this->module->afterRestore())
+		{
+			$this->stdout("\n\n  [!!] afterRestore() returned false. The system might still be in maintenance mode.\n", Console::FG_RED);
+		}
+
 		$this->stdout("\n  System restored.\n\n", Console::FG_GREEN );
+
+		exit(0);
 	}
 }
