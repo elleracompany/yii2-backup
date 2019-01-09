@@ -189,6 +189,7 @@ An example cron job could look like this:
 
 ##### Extendable methods
 If you need to alter the system state before and after backups and restores, you can do that by extending the Methods class.
+This could be useful to end all database connections or put the system into maintenance mode.
 
 Crate a new file in your project. For instance `console\components\BackupMethods`:
 ```
@@ -223,12 +224,12 @@ class BackupMethods extends \ellera\backup\components\Methods
 
 And update the config to use this file:
 ```
-	'modules' => [
-		'backup' => [
-			'class' => 'ellera\backup\Module',
-			'methods_class' => 'console\components\BackupMethods'
-		]
-	],
+'modules' => [
+	'backup' => [
+		'class' => 'ellera\backup\Module',
+		'methods_class' => 'console\components\BackupMethods'
+	]
+],
 ```
 
 This methods will be invoked before and after create and restore, and if the before methods return false the execution will be stopped.
