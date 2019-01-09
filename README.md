@@ -235,3 +235,22 @@ And update the config to use this file:
 This methods will be invoked before and after create and restore, and if the before methods return false the execution will be stopped.
 
 If the after methods returns false they will echo a warning to the terminal/log.
+
+##### Automated Cleanup
+If you want the system to automatically clear out old backups, you can configure `automated_cleanup`.
+`automated_cleanup` defaults to false, and require an array of boolean values for be activated.
+```php
+    'modules' => [
+    'backup' => [
+   		'class' => 'ellera\backup\Module',
+   		'automated_cleanup' => [
+            'daily' => true,
+            'weekly' => true,
+            'monthly' => true,
+            'yearly' => true
+        ]
+    ]
+],
+```
+When activated the cron method will delete all but the latest backup of the previous period. Lets look at an example:
+If you run hourly backups, but have configured `'daily' => true`, the first cron job of a new day will delete all but the latest backup from the previous day.

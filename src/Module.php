@@ -5,6 +5,7 @@ namespace ellera\backup;
 use ellera\backup\components\Methods;
 use Yii;
 use ellera\backup\models\Backup;
+use yii\base\InvalidConfigException;
 
 class Module extends \yii\base\Module
 {
@@ -82,12 +83,32 @@ class Module extends \yii\base\Module
 	public $methods_class_instance;
 
 	/**
+	 * @var array|bool Automated Cleanup
+	 *
+	 *   [
+	 *		'daily' 	=> true,
+	 *   	'weekly' 	=> true,
+	 *		'monthly'	=> true,
+	 *      'yearly' 	=> true
+	 *   ]
+	 */
+	public $automated_cleanup = false;
+
+	/**
 	 * Initiate the module
+	 * @throws InvalidConfigException
 	 */
 	public function init()
 	{
 		$path = Yii::getAlias($this->path);
 		$this->methods_class_instance = new $this->methods_class;
+		if($this->automated_cleanup && is_array($this->automated_cleanup))
+		{
+			$valid = ['daily', 'weekly', 'monthly', 'yearly'];
+			foreach ($this->automated_cleanup as $key => $value) {
+				if(!in_array($key, $valid) || !is_bool($value)) throw new InvalidConfigException('Invalid config for $automated_cleanup');
+			}
+		}
 		if (!is_dir($path) && !mkdir($path,0777))
 			die("Unable to create backup folder in $path. \nCheck permissions and try again.");
 		$this->timestamp = time();
