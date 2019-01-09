@@ -238,12 +238,13 @@ If the after methods returns false they will echo a warning to the terminal/log.
 
 ##### Automated Cleanup
 If you want the system to automatically clear out old backups, you can configure `automated_cleanup`.
-`automated_cleanup` defaults to false, and require an array of boolean values for be activated.
+
+`automated_cleanup` defaults to false, and require an array of boolean values to be activated.
 ```php
     'modules' => [
     'backup' => [
-   		'class' => 'ellera\backup\Module',
-   		'automated_cleanup' => [
+        'class' => 'ellera\backup\Module',
+        'automated_cleanup' => [
             'daily' => true,
             'weekly' => true,
             'monthly' => true,
@@ -252,5 +253,7 @@ If you want the system to automatically clear out old backups, you can configure
     ]
 ],
 ```
-When activated the cron method will delete all but the latest backup of the previous period. Lets look at an example:
+When activated the cron method will delete all but the latest backup of the previous period.
+
+Lets look at an example:
 If you run hourly backups, but have configured `'daily' => true`, the first cron job of a new day will delete all but the latest backup from the previous day.
