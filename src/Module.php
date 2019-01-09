@@ -2,6 +2,7 @@
 
 namespace ellera\backup;
 
+use ellera\backup\components\Methods;
 use Yii;
 use ellera\backup\models\Backup;
 
@@ -71,11 +72,22 @@ class Module extends \yii\base\Module
 	public $datetime_format = 'Y-m-d H:i:s';
 
 	/**
+	 * @var string Method class for extendable methods
+	 */
+	public $methods_class = 'ellera\backup\components\Methods';
+
+	/**
+	 * @var Methods Class Instance
+	 */
+	public $methods_class_instance;
+
+	/**
 	 * Initiate the module
 	 */
 	public function init()
 	{
 		$path = Yii::getAlias($this->path);
+		$this->methods_class_instance = new $this->methods_class;
 		if (!is_dir($path) && !mkdir($path,0777))
 			die("Unable to create backup folder in $path. \nCheck permissions and try again.");
 		$this->timestamp = time();
@@ -98,11 +110,11 @@ class Module extends \yii\base\Module
 	/**
 	 * Calculate folder size
 	 *
-	 * @param $dir
+	 * @param string 	$dir
 	 *
 	 * @return int
 	 */
-	public function folderSize($dir) : int
+	public function folderSize(string $dir) : int
 	{
 		// https://gist.github.com/eusonlito/5099936
 
@@ -114,12 +126,12 @@ class Module extends \yii\base\Module
 	}
 
 	/**
-	 * @param      $comment
-	 * @param bool $verbose
+	 * @param string	$comment
+	 * @param bool 		$verbose
 	 *
 	 * @return Backup
 	 */
-	public function createBackup($comment, $verbose = true) : Backup
+	public function createBackup(string $comment, bool $verbose = true) : Backup
 	{
 		$path = Yii::getAlias($this->path.DIRECTORY_SEPARATOR.$this->timestamp);
 		if (!is_dir($path) && !mkdir($path,0777))
@@ -182,12 +194,12 @@ class Module extends \yii\base\Module
 	/**
 	 * Format bytes to human readable form
 	 *
-	 * @param $bytes
-	 * @param int $precision
+	 * @param int 	$bytes
+	 * @param int 	$precision
 	 *
 	 * @return string
 	 */
-	public function formatBytes($bytes, $precision = 2) : string
+	public function formatBytes(int $bytes, int $precision = 2) : string
 	{
 		$units = array('B', 'KB', 'MB', 'GB', 'TB');
 
@@ -203,11 +215,11 @@ class Module extends \yii\base\Module
 	/**
 	 * Delete folder and contents
 	 *
-	 * @param $dirPath
+	 * @param string	$dirPath
 	 *
 	 * @return bool
 	 */
-	public function deleteDir($dirPath) : bool
+	public function deleteDir(string $dirPath) : bool
 	{
 		if (! is_dir($dirPath)) {
 			throw new \InvalidArgumentException("$dirPath must be a directory");
@@ -229,11 +241,11 @@ class Module extends \yii\base\Module
 	/**
 	 * Return human readable form of elapsed time between $time and now.
 	 *
-	 * @param $time
+	 * @param int 	$time
 	 *
 	 * @return string
 	 */
-	public function timeSince ($time) : string
+	public function timeSince(int $time) : string
 	{
 		// https://stackoverflow.com/questions/2915864/php-how-to-find-the-time-elapsed-since-a-date-time#answer-2916189
 		$time = time() - $time; // to get the time since that moment
@@ -253,19 +265,18 @@ class Module extends \yii\base\Module
 			$numberOfUnits = floor($time / $unit);
 			return $numberOfUnits.' '.$text.(($numberOfUnits>1)?'s':'');
 		}
-
 	}
 
 	/**
 	 * Creates a zip-file containing the content of $folder
 	 *
-	 * @param $name
-	 * @param $folder
-	 * @param $path
+	 * @param string 	$name
+	 * @param string 	$folder
+	 * @param string 	$path
 	 *
 	 * @return string
 	 */
-	private function zipFolder($name, $folder, $path) : string
+	private function zipFolder(string $name, string $folder, string $path) : string
 	{
 		if($path)
 		{
@@ -300,41 +311,14 @@ class Module extends \yii\base\Module
 	}
 
 	/**
-	 * Function invoked before restoring a backup
-	 * Can be extended and used for putting the application in
-	 * maintenance mode.
-	 *
-	 * If the function returns false, the restore function will abort
-	 *
-	 * @return bool
-	 */
-	public function beforeRestore(): bool
-	{
-		return true;
-	}
-
-	/**
-	 * Function invoked after a backup is restored
-	 * Should be used to reverse the actions in beforeRestore()
-	 *
-	 * If the function returns false, the operator will be notified
-	 *
-	 * @return bool
-	 */
-	public function afterRestore(): bool
-	{
-		return true;
-	}
-
-	/**
 	 * Dumping database to file
 	 *
-	 * @param $database_handle
-	 * @param $path
+	 * @param string 	$database_handle
+	 * @param string 	$path
 	 *
 	 * @return string
 	 */
-	private function dumpDatabase($database_handle, $path) : string
+	private function dumpDatabase(string $database_handle, string $path) : string
 	{
 		$database = Yii::$app->$database_handle->createCommand("SELECT DATABASE()")->queryScalar();
 		// https://stackoverflow.com/questions/6750531/using-a-php-file-to-generate-a-mysql-dump

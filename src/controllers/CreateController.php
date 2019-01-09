@@ -29,11 +29,11 @@ class CreateController extends Controller
 	 *
 	 * @param string $comment
 	 */
-	public function actionIndex($comment = "No comment") : void
+	public function actionIndex(string $comment = "No comment") : void
 	{
+
 		echo "\n  Creating backup...\n\n";
-		$backup = $this->module->createBackup($comment);
-		$backup->save();
+		$this->createBackup($comment);
 		$this->stdout("\n  Backup created.\n\n", Console::FG_GREEN);
 	}
 
@@ -43,9 +43,31 @@ class CreateController extends Controller
 	 *
 	 * @param string $comment
 	 */
-	public function actionCron($comment = "Cron Job") : void
+	public function actionCron(string $comment = "Cron Job") : void
 	{
-		$backup = $this->module->createBackup($comment, false);
-		$backup->save();
+		$this->createBackup($comment, false);
+	}
+
+	/**
+	 * Private method checking beforeCreate() and afterCreate()
+	 *
+	 * @param string $comment
+	 * @param bool   $verbose
+	 */
+	private function createBackup(string $comment, bool $verbose = true) : void
+	{
+		if(!$this->module->methods_class_instance->beforeCreate())
+		{
+			$this->stdout("\n\n  [!] beforeCreate() returned false.\n", Console::FG_RED);
+			echo "\n  Exiting...\n\n";
+			exit(1);
+		}
+		$backup = $this->module->createBackup($comment, $verbose);
+		if(!$backup->save()) $this->stdout("\n\n  [!] Backup record could not be save to database.\n", Console::FG_RED);
+		if(!$this->module->methods_class_instance->afterCreate())
+		{
+			$this->stdout("\n\n  [!] afterCreate() returned false. The system might still be in backup mode.\n", Console::FG_RED);
+		}
+
 	}
 }

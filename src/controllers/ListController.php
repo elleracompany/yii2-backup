@@ -30,8 +30,10 @@ class ListController extends Controller
 	 * Page defaults to 1
 	 *
 	 * @param int $page
+	 *
+	 * @throws \yii\base\InvalidConfigException
 	 */
-	public function actionIndex($page = 1)
+	public function actionIndex(int $page = 1) : void
 	{
 		$raw_page = explode('=', $page);
 		$page = end($raw_page );

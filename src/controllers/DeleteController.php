@@ -27,9 +27,12 @@ class DeleteController extends Controller
 	/**
 	 * Delete database record and files of backup based on ID
 	 *
-	 * @param $id
+	 * @param int $id
+	 *
+	 * @throws \Throwable
+	 * @throws \yii\db\StaleObjectException
 	 */
-	public function actionIndex($id)
+	public function actionIndex(int $id) : void
 	{
 		$backup = Backup::findOne($id);
 		if($backup)
