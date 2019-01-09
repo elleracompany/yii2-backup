@@ -54,4 +54,16 @@ class Backup extends \yii\db\ActiveRecord
             'comment' => 'Comment',
         ];
     }
+
+	/**
+	 * Check if the backup files still exist in the
+	 * file system.
+	 *
+	 * @return bool
+	 */
+    public function filesExist() : bool
+	{
+		if(isset($this->path) && file_exists($this->path)) return true;
+		return false;
+	}
 }

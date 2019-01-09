@@ -268,6 +268,29 @@ class Module extends \yii\base\Module
 	}
 
 	/**
+	 * Cleans up old and deleted backups.
+	 *
+	 * @param bool $verbose
+	 *
+	 * @return int
+	 * @throws \Throwable
+	 * @throws \yii\db\StaleObjectException
+	 */
+	public function cleanUp(bool $verbose = true) : int
+	{
+		$i = 0;
+		/* @var $backups Backup[] */
+		$backups = Backup::find()->all();
+		foreach ($backups as $backup) if(!$backup->filesExist()) {
+			if($backup->delete()) {
+				if($verbose) echo "   [*] Deleted backup with ID {$backup->id}: Missing files";
+				$i++;
+			}
+		}
+		return $i;
+	}
+
+	/**
 	 * Creates a zip-file containing the content of $folder
 	 *
 	 * @param string 	$name
