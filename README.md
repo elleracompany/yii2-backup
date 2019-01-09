@@ -192,7 +192,7 @@ If you need to alter the system state before and after backups and restores, you
 This could be useful to end all database connections or put the system into maintenance mode.
 
 Crate a new file in your project. For instance `console\components\BackupMethods`:
-```
+```php
 <?php
 
 namespace console\components;
@@ -223,7 +223,7 @@ class BackupMethods extends \ellera\backup\components\Methods
 ```
 
 And update the config to use this file:
-```
+```php
 'modules' => [
 	'backup' => [
 		'class' => 'ellera\backup\Module',
