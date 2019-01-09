@@ -17,6 +17,8 @@
   ],
 
   "require": {
+    "php": ">=7.1.0",
+    "ext-zip": "*",
     "yiisoft/yii2": "~2.0.0"
   },
 

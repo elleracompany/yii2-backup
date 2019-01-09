@@ -28,8 +28,10 @@ class RestoreController extends Controller
 	 * Restore database and file-locations from backup with ID
 	 *
 	 * @param $id
+	 *
+	 * @throws \yii\base\InvalidConfigException
 	 */
-	public function actionIndex($id)
+	public function actionIndex($id) : void
 	{
 		$backup = Backup::findOne($id);
 		if(!$backup)

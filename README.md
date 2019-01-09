@@ -52,7 +52,8 @@ When the migration is done, you're ready to backup your site. Use `php yii *comm
 | Command | Description | 
 | --- | --- |
 | backup | List all the available commands | 
-| backup/create "Optional comment" | Show file differences that haven't been staged |
+| backup/create "Optional comment" | Crate a manual backup |
+| backup/create/cron "Optional comment" | Use this command for cron jobs |
 | backup/list #OptionalPage | Lists the current backups | 
 | backup/delete #ID | Deletes a backup | 
 | backup/restore #ID | Restores a backup | 
@@ -61,6 +62,9 @@ When the migration is done, you're ready to backup your site. Use `php yii *comm
 `php yii backup/create "Your Comment"`
 
 ![Creating a backup](doc_images/create.png)
+
+##### Cron: Create backup
+`php yii backup/create/cron "Cron Job - Daily backup"`
 
 ##### Manual: List backups
 `php yii backup/list (# optional page number)`
@@ -173,3 +177,13 @@ It's **highly** recommended to create a user on the remote server for this purpo
     ...
 ]
 ```
+
+##### Create a cron job
+If you want to automate the backup you can use the create/cron method `php yii backup/create/cron "Cron-Job - Daily Backup"`.
+This method is less verbose and will only echo out one line for logging to file.
+
+An example cron job could look like this:
+```
+0 0 * * * php /path/to/yii/folder/yii backup/create/cron "Nightly automated backup" >> /var/logs/backup.log 2>&1
+```
+
