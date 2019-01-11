@@ -235,32 +235,6 @@ class Module extends \yii\base\Module
 	}
 
 	/**
-	 * Delete folder and contents
-	 *
-	 * @param string	$dirPath
-	 *
-	 * @return bool
-	 */
-	public function deleteDir(string $dirPath) : bool
-	{
-		if (! is_dir($dirPath)) {
-			throw new \InvalidArgumentException("$dirPath must be a directory");
-		}
-		if (substr($dirPath, strlen($dirPath) - 1, 1) != '/') {
-			$dirPath .= '/';
-		}
-		$files = glob($dirPath . '*', GLOB_MARK);
-		foreach ($files as $file) {
-			if (is_dir($file)) {
-				self::deleteDir($file);
-			} else {
-				unlink($file);
-			}
-		}
-		return rmdir($dirPath);
-	}
-
-	/**
 	 * Return human readable form of elapsed time between $time and now.
 	 *
 	 * @param int 	$time
@@ -287,6 +261,7 @@ class Module extends \yii\base\Module
 			$numberOfUnits = floor($time / $unit);
 			return $numberOfUnits.' '.$text.(($numberOfUnits>1)?'s':'');
 		}
+		return 'Not Defined';
 	}
 
 	/**
@@ -294,62 +269,66 @@ class Module extends \yii\base\Module
 	 *
 	 * @param bool $verbose
 	 *
-	 * @return int
 	 * @throws \Throwable
 	 * @throws \yii\db\StaleObjectException
 	 */
-	public function cleanUp(bool $verbose = true) : int
+	public function cleanUp(bool $verbose = true) : void
 	{
-		$i = 0;
+		$missing_files = 0;
 		/* @var $backups Backup[] */
 		$backups = Backup::find()->all();
 		foreach ($backups as $backup) if(!$backup->filesExist()) {
 			if($backup->delete()) {
 				if($verbose) echo "   [*] Deleted backup with ID {$backup->id}: Missing files";
-				$i++;
+				$missing_files++;
 			}
 		}
-		return $i;
-	}
 
-	/**
-	 * @throws \Throwable
-	 * @throws \yii\db\StaleObjectException
-	 */
-	public function cronCleanUp()
-	{
-		if($this->automated_cleanup === false) {
-			return;
-		}
-		// Delete the backups with missing files
-		$missing_files = $this->cleanUp(false);
+		if($verbose) echo "Deleted {$missing_files} backups with missing files\n";
 
-		// Get all backups timestamps and IDs
-		$timestamps_to_id = ArrayHelper::map((new \yii\db\Query())
-			->select(['id', 'timestamp'])
-			->from($this->table)
-			->all(),'timestamp','id');
+		if($this->automated_cleanup !== false) {
+			// Get all backups timestamps and IDs
+			$timestamps_to_id = ArrayHelper::map((new \yii\db\Query())
+				->select(['id', 'timestamp'])
+				->from($this->table)
+				->all(),'timestamp','id');
 
-		// Array of only timestamps
-		$timestamps = array_keys($timestamps_to_id);
+			// Array of only timestamps
+			$timestamps = array_keys($timestamps_to_id);
 
-		if(array_key_exists('yearly', $this->automated_cleanup) && $this->automated_cleanup['yearly'] === true) {
-			$reference_time = new \DateTime();
-			$reference_time->setDate($reference_time->format('Y'), 1, 1);
-			$reference_time->setTime(0,0,0);
+			// Daily CleanUp
+			if(array_key_exists('daily', $this->automated_cleanup) && $this->automated_cleanup['daily'] === true) {
+				$reference_time = new \DateTime();
+				// $reference_time->setDate($reference_time->format('Y'), 1, 1); // Needed for yearly/weekly/monthly
+				$reference_time->setTime(0,0,0);
+				$reference_time->modify('-1 day');
+				$reference_time_start = clone $reference_time;
+				$reference_time_start->modify('-1 day');
 
-			$reference_timestamp = $reference_time->getTimestamp();
-			$removable = array_filter(
-				$timestamps,
-				function ($value) use($reference_timestamp) {
-					return ($value > $reference_timestamp);
+				$end = $reference_time->getTimestamp();
+				$start = $reference_time_start->getTimestamp();
+				$removable = array_filter(
+					$timestamps,
+					function ($value) use($start, $end) {
+						return ($value > $start && $value < $end);
+					}
+				);
+
+				sort($removable);
+				array_pop($removable);
+				$daily = 0;
+				foreach ($removable as $rem) {
+					$backup = Backup::findOne($timestamps_to_id[$rem]);
+					if($backup) {
+						$result = $backup->delete();
+						if($result) $daily += $result;
+					}
 				}
-			);
 
-			// TODO: Fix the functionality here
-			die(var_dump($removable));
+				if($verbose) echo "Deleted {$daily} backups from daily cleanup\n";
+			}
 		}
-		var_dump($timestamps);
+
 	}
 
 	/**

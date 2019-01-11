@@ -40,12 +40,16 @@ class CreateController extends Controller
 	/**
 	 * Crate a new backup
 	 * Non-interactive cron-job
-	 *
+	 * 
 	 * @param string $comment
+	 *
+	 * @throws \Throwable
+	 * @throws \yii\db\StaleObjectException
 	 */
 	public function actionCron(string $comment = "Cron Job") : void
 	{
 		$this->createBackup($comment, false);
+		$this->module->cleanUp(false);
 	}
 
 	/**
