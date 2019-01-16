@@ -327,6 +327,39 @@ class Module extends \yii\base\Module
 
 				if($verbose) echo "Deleted {$daily} backups from daily cleanup\n";
 			}
+
+			// Weekly CleanUp
+			if(array_key_exists('weekly', $this->automated_cleanup) && $this->automated_cleanup['weekly'] === true) {
+				$reference_time = new \DateTime();
+				// $reference_time->setDate($reference_time->format('Y'), 1, 1); // Needed for yearly/weekly/monthly
+				$reference_time->setTime(0,0,0);
+				$reference_time->modify('last monday');
+				$reference_time->modify('-1 week');
+				$reference_time_start = clone $reference_time;
+				$reference_time_start->modify('-1 week');
+
+				$end = $reference_time->getTimestamp();
+				$start = $reference_time_start->getTimestamp();
+				$removable = array_filter(
+					$timestamps,
+					function ($value) use($start, $end) {
+						return ($value > $start && $value < $end);
+					}
+				);
+
+				sort($removable);
+				array_pop($removable);
+				$daily = 0;
+				foreach ($removable as $rem) {
+					$backup = Backup::findOne($timestamps_to_id[$rem]);
+					if($backup) {
+						$result = $backup->delete();
+						if($result) $daily += $result;
+					}
+				}
+
+				if($verbose) echo "Deleted {$daily} backups from daily cleanup\n";
+			}
 		}
 
 	}

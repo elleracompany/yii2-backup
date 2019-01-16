@@ -40,7 +40,7 @@ class CreateController extends Controller
 	/**
 	 * Crate a new backup
 	 * Non-interactive cron-job
-	 * 
+	 *
 	 * @param string $comment
 	 *
 	 * @throws \Throwable
