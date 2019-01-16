@@ -204,10 +204,10 @@ If you want the system to automatically clear out old backups, you can configure
     ]
 ],
 ```
-When activated the cron method will delete all but the latest backup of the previous period.
+When activated the cron method will delete all but the latest backup of the period before the previous period.
 
 Lets look at an example:
-If you run hourly backups, but have configured `'daily' => true`, the first cron job of a new day will delete all but the latest backup from the previous day.
+If you run hourly backups, but have configured `'daily' => true`, the first cron job of a new day will delete all but the latest backup from the period before the previous day.
 
 ##### Extendable methods
 If you need to alter the system state before and after backups and restores, you can do that by extending the Methods class.
