@@ -49,7 +49,7 @@ class CreateController extends Controller
 	public function actionCron(string $comment = "Cron Job") : void
 	{
 		$this->createBackup($comment, false);
-		$this->module->cleanUp(true);
+		$this->module->cleanUp(false);
 	}
 
 	/**
