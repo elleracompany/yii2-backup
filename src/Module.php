@@ -279,7 +279,7 @@ class Module extends \yii\base\Module
 		$backups = Backup::find()->all();
 		foreach ($backups as $backup) if(!$backup->filesExist()) {
 			if($backup->delete()) {
-				if($verbose) echo "   [*] Deleted backup with ID {$backup->id}: Missing files";
+				if($verbose) echo "   [*] Deleted backup with ID {$backup->id}: Missing files\n";
 				$missing_files++;
 			}
 		}
@@ -349,16 +349,80 @@ class Module extends \yii\base\Module
 
 				sort($removable);
 				array_pop($removable);
-				$daily = 0;
+				$weekly = 0;
 				foreach ($removable as $rem) {
 					$backup = Backup::findOne($timestamps_to_id[$rem]);
 					if($backup) {
 						$result = $backup->delete();
-						if($result) $daily += $result;
+						if($result) $weekly += $result;
 					}
 				}
 
-				if($verbose) echo "Deleted {$daily} backups from daily cleanup\n";
+				if($verbose) echo "Deleted {$weekly} backups from weekly cleanup\n";
+			}
+
+			// Monthly CleanUp
+			if(array_key_exists('monthly', $this->automated_cleanup) && $this->automated_cleanup['monthly'] === true) {
+				$reference_time = new \DateTime();
+				$reference_time->setTime(0,0,0);
+				$reference_time->setDate($reference_time->format('Y'), $reference_time->format('m'), 1);
+				$reference_time->modify('-1 month');
+				$reference_time_start = clone $reference_time;
+				$reference_time_start->modify('-1 month');
+
+				$end = $reference_time->getTimestamp();
+				$start = $reference_time_start->getTimestamp();
+				$removable = array_filter(
+					$timestamps,
+					function ($value) use($start, $end) {
+						return ($value > $start && $value < $end);
+					}
+				);
+
+				sort($removable);
+				array_pop($removable);
+				$monthly = 0;
+				foreach ($removable as $rem) {
+					$backup = Backup::findOne($timestamps_to_id[$rem]);
+					if($backup) {
+						$result = $backup->delete();
+						if($result) $monthly += $result;
+					}
+				}
+
+				if($verbose) echo "Deleted {$monthly} backups from monthly cleanup\n";
+			}
+
+			// Weekly CleanUp
+			if(array_key_exists('weekly', $this->automated_cleanup) && $this->automated_cleanup['weekly'] === true) {
+				$reference_time = new \DateTime();
+				$reference_time->setTime(0,0,0);
+				$reference_time->setDate($reference_time->format('Y'), 1, 1);
+				$reference_time->modify('-1 year');
+				$reference_time_start = clone $reference_time;
+				$reference_time_start->modify('-1 year');
+
+				$end = $reference_time->getTimestamp();
+				$start = $reference_time_start->getTimestamp();
+				$removable = array_filter(
+					$timestamps,
+					function ($value) use($start, $end) {
+						return ($value > $start && $value < $end);
+					}
+				);
+
+				sort($removable);
+				array_pop($removable);
+				$yearly = 0;
+				foreach ($removable as $rem) {
+					$backup = Backup::findOne($timestamps_to_id[$rem]);
+					if($backup) {
+						$result = $backup->delete();
+						if($result) $yearly += $result;
+					}
+				}
+
+				if($verbose) echo "Deleted {$yearly} backups from yearly cleanup\n";
 			}
 		}
 

@@ -84,7 +84,7 @@ class Backup extends \yii\db\ActiveRecord
 	private function deleteDir(string $dirPath) : bool
 	{
 		if (! is_dir($dirPath)) {
-			throw new \InvalidArgumentException("$dirPath must be a directory");
+			return true;
 		}
 		if (substr($dirPath, strlen($dirPath) - 1, 1) != '/') {
 			$dirPath .= '/';
