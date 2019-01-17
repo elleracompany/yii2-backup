@@ -13,7 +13,7 @@ class Methods
 	 */
 	public function beforeCreate() : bool
 	{
-		return false;
+		return true;
 	}
 
 	/**
@@ -22,7 +22,7 @@ class Methods
 	 */
 	public function afterCreate() : bool
 	{
-		return false;
+		return true;
 	}
 
 	/**
@@ -33,7 +33,7 @@ class Methods
 	 */
 	public function beforeRestore() : bool
 	{
-		return false;
+		return true;
 	}
 
 	/**
@@ -42,6 +42,6 @@ class Methods
 	 */
 	public function afterRestore() : bool
 	{
-		return false;
+		return true;
 	}
 }
