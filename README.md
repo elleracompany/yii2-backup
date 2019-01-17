@@ -187,6 +187,28 @@ An example cron job could look like this:
 0 0 * * * php /path/to/yii/folder/yii backup/create/cron "Nightly automated backup" >> /var/logs/backup.log 2>&1
 ```
 
+##### Automated Cleanup
+If you want the system to automatically clear out old backups, you can configure `automated_cleanup`.
+
+`automated_cleanup` defaults to false, and require an array of boolean values to be activated.
+```php
+    'modules' => [
+    'backup' => [
+        'class' => 'ellera\backup\Module',
+        'automated_cleanup' => [
+            'daily' => true,
+            'weekly' => true,
+            'monthly' => true,
+            'yearly' => true
+        ]
+    ]
+],
+```
+When activated the cron method will delete all but the latest backup of the period before the previous period.
+
+Lets look at an example:
+If you run hourly backups, but have configured `'daily' => true`, the first cron job of a new day will delete all but the latest backup from the period before the previous day.
+
 ##### Extendable methods
 If you need to alter the system state before and after backups and restores, you can do that by extending the Methods class.
 This could be useful to end all database connections or put the system into maintenance mode.

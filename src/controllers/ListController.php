@@ -45,6 +45,7 @@ class ListController extends Controller
 			'pageSize' => $this->module->pagesize,
 			'page' => $page -1
 		]);
+		/* @var $backups Backup[] */
 		$backups = $query->offset($pages->offset)
 		                 ->limit($pages->limit)
 		                 ->orderBy('id DESC')
@@ -55,7 +56,8 @@ class ListController extends Controller
 		if(empty($backups)) $this->stdout("    No backups found...\n\n");
 		foreach ($backups as $backup)
 		{
-			$this->stdout(" [{$backup->id}]\t".Yii::$app->formatter->asDatetime($backup->timestamp)."  \t\t\t{$this->module->formatBytes($backup->size)}\n");
+			$this->stdout(" [{$backup->id}]\t".Yii::$app->formatter->asDatetime($backup->timestamp)."  \t\t\t{$this->module->formatBytes($backup->size)}\n",
+				$backup->filesExist() ? Console::FG_GREY : Console::FG_RED);
 			$this->stdout(" \t{$backup->comment}\n\n", Console::FG_YELLOW);
 		}
 		$size = $this->module->folderSize(Yii::getAlias($this->module->path));

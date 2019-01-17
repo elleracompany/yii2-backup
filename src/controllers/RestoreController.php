@@ -29,14 +29,23 @@ class RestoreController extends Controller
 	 *
 	 * @param int $id
 	 *
+	 * @throws \Throwable
 	 * @throws \yii\base\InvalidConfigException
+	 * @throws \yii\db\StaleObjectException
 	 */
 	public function actionIndex(int $id) : void
 	{
 		$backup = Backup::findOne($id);
 		if(!$backup)
 		{
+			$this->stdout("\n  Error encountered when trying to restore:");
 			$this->stdout("\n  Backup {$id} was not found\n\n", Console::FG_RED);
+			exit(1);
+		}
+		if(!$backup->filesExist())
+		{
+			$this->stdout("\n  Error encountered when trying to restore:");
+			$this->stdout("\n  Backup files for {$id} was not found\n\n", Console::FG_RED);
 			exit(1);
 		}
 		$this->stdout("\nBackup {$id} - ".Yii::$app->formatter->asDatetime($backup->timestamp)."\n\n");
@@ -127,6 +136,9 @@ class RestoreController extends Controller
 		{
 			$this->stdout("\n\n  [!] afterRestore() returned false. The system might still be in maintenance mode.\n", Console::FG_RED);
 		}
+
+		$cleanup = $this->module->cleanUp(false);
+		if($cleanup > 0) $this->stdout("\n  Removed {$cleanup} backups with missing files.\n\n", Console::FG_YELLOW );
 
 		$this->stdout("\n  System restored.\n\n", Console::FG_GREEN );
 

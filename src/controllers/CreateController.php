@@ -42,10 +42,14 @@ class CreateController extends Controller
 	 * Non-interactive cron-job
 	 *
 	 * @param string $comment
+	 *
+	 * @throws \Throwable
+	 * @throws \yii\db\StaleObjectException
 	 */
 	public function actionCron(string $comment = "Cron Job") : void
 	{
 		$this->createBackup($comment, false);
+		$this->module->cleanUp(false);
 	}
 
 	/**
@@ -69,5 +73,23 @@ class CreateController extends Controller
 			$this->stdout("\n\n  [!] afterCreate() returned false. The system might still be in backup mode.\n", Console::FG_RED);
 		}
 
+	}
+
+	/**
+	 * Create fake backups
+	 * For cleanup testing purposes
+	 *
+	 * @param int $start
+	 * @param int $interval
+	 */
+	public function actionFake(int $start, int $interval) : void
+	{
+		$this->module->timestamp = $start;
+		while($this->module->timestamp < time()) {
+			$this->module->timestamp += ($interval + rand(0,10));
+			echo "\n  Creating backup...\n\n";
+			$this->createBackup("Fake");
+			$this->stdout("\n  Backup created.\n\n", Console::FG_GREEN);
+		}
 	}
 }
