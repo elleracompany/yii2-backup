@@ -151,7 +151,7 @@ class RestoreController extends Controller
             'mysql --user=%s  --password=%s --host=%s -e "DROP DATABASE %s" 2> %s',
             Yii::$app->$name->username,
             Yii::$app->$name->password,
-            $this->module->getHost($database),
+            $this->module->getHost($name),
             $database,
             Yii::getAlias($this->module->pathLog)
         ));
@@ -163,7 +163,7 @@ class RestoreController extends Controller
             'mysql --user=%s  --password=%s --host=%s -e "CREATE DATABASE  %s" 2> %s',
             Yii::$app->$name->username,
             Yii::$app->$name->password,
-            $this->module->getHost($database),
+            $this->module->getHost($name),
             $database,
             Yii::getAlias($this->module->pathLog)
         ));
@@ -175,7 +175,7 @@ class RestoreController extends Controller
             'mysql --user=%s  --password=%s --host=%s %s < %s 2> %s',
             Yii::$app->$name->username,
             Yii::$app->$name->password,
-            $this->module->getHost($database),
+            $this->module->getHost($name),
             $database,
             $path,
             Yii::getAlias($this->module->pathLog)
