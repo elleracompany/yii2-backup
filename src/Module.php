@@ -479,11 +479,43 @@ class Module extends \yii\base\Module
 	 *
 	 * @return string
 	 */
-	private function dumpDatabase(string $database_handle, string $path) : string
-	{
-		$database = Yii::$app->$database_handle->createCommand("SELECT DATABASE()")->queryScalar();
-		// https://stackoverflow.com/questions/6750531/using-a-php-file-to-generate-a-mysql-dump
-		exec('mysqldump --user='.Yii::$app->$database_handle->username.' --password='.Yii::$app->$database_handle->password.' --host=localhost '.$database.' > '.$path.DIRECTORY_SEPARATOR.$database.'.sql 2> /dev/null');
-		return $path.DIRECTORY_SEPARATOR.$database.'.sql';
-	}
+    private function dumpDatabase(string $database_handle, string $path) : string
+    {
+        $database = Yii::$app->$database_handle->createCommand("SELECT DATABASE()")->queryScalar();
+        $filePath = $path . DIRECTORY_SEPARATOR . $database . '.sql';
+
+        exec(sprintf(
+            'mysqldump --user=%s --password=%s --host=%s %s > %s 2> /dev/null',
+            Yii::$app->$database_handle->username,
+            Yii::$app->$database_handle->password,
+            $this->getHost($database_handle),
+            $database,
+            $filePath
+        ));
+
+        return $filePath;
+    }
+
+    /**
+     * @param string $database_handle
+     *
+     * @return string
+     * @throws \Exception
+     */
+    public function getHost(string $database_handle) : string
+    {
+        preg_match_all(
+            '/host=(.*);/m',
+            Yii::$app->$database_handle->dsn,
+            $matches,
+            PREG_SET_ORDER,
+            0
+        );
+        $host = $matches[0][1] ?? null;
+        if ($host === null) {
+            throw new \Exception('Не удалось определить host базы данных!');
+        }
+
+        return $host;
+    }
 }
