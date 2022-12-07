@@ -97,17 +97,17 @@ class RestoreController extends Controller
 				// https://stackoverflow.com/questions/2050581/how-to-delete-mysql-database-through-shell-command
 				$this->stdout("    DROPPING {$database} ", Console::FG_YELLOW );
 				$this->stdout(str_repeat(".",30-$length), Console::FG_YELLOW );
-				exec('mysql --user='.Yii::$app->$name->username.' --password='.Yii::$app->$name->password.' --host=localhost -e "DROP DATABASE '.$database.'" 2> /dev/null');
+				$this->dropDatabase($name,$database);
 				$this->stdout(" done\n", Console::FG_GREEN );
 
 				$this->stdout("    CREATING {$database} ", Console::FG_YELLOW );
 				$this->stdout(str_repeat(".",30-$length), Console::FG_YELLOW );
-				exec('mysql --user='.Yii::$app->$name->username.' --password='.Yii::$app->$name->password.' --host=localhost -e "CREATE DATABASE '.$database.'" 2> /dev/null');
+				$this->createDatabase($name,$database);
 				$this->stdout(" done\n", Console::FG_GREEN );
 
 				$this->stdout("    IMPORTING {$database} ", Console::FG_YELLOW );
 				$this->stdout(str_repeat(".",29-$length), Console::FG_YELLOW );
-				exec('mysql --user='.Yii::$app->$name->username.' --password='.Yii::$app->$name->password.' --host=localhost '.$database.' < '.$path.' 2> /dev/null');
+				$this->importDatabase($name,$database,$path);
 				$this->stdout(" done\n", Console::FG_GREEN );
 			}
 		}
@@ -144,4 +144,41 @@ class RestoreController extends Controller
 
 		exit(0);
 	}
+
+    protected function dropDatabase(string $name, string $database) : void
+    {
+        exec(sprintf(
+            'mysql --user=%s  --password=%s --host=%s -e "DROP DATABASE %s" 2> %s',
+            Yii::$app->$name->username,
+            Yii::$app->$name->password,
+            $this->module->getHost($database),
+            $database,
+            Yii::getAlias($this->module->pathLog)
+        ));
+    }
+
+    protected function createDatabase(string $name, string $database) : void
+    {
+        exec(sprintf(
+            'mysql --user=%s  --password=%s --host=%s -e "CREATE DATABASE  %s" 2> %s',
+            Yii::$app->$name->username,
+            Yii::$app->$name->password,
+            $this->module->getHost($database),
+            $database,
+            Yii::getAlias($this->module->pathLog)
+        ));
+    }
+
+    protected function importDatabase(string $name, string $database, string $path) : void
+    {
+        exec(sprintf(
+            'mysql --user=%s  --password=%s --host=%s %s < %s 2> %s',
+            Yii::$app->$name->username,
+            Yii::$app->$name->password,
+            $this->module->getHost($database),
+            $database,
+            $path,
+            Yii::getAlias($this->module->pathLog)
+        ));
+    }
 }

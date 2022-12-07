@@ -23,6 +23,12 @@ class Module extends \yii\base\Module
 	 */
 	public $path = '@app/_backup';
 
+    /**
+     * Backup save log path
+     * @var string
+     */
+    public $pathLog = '@runtime/_backup';
+
 	/**
 	 * List of folders to backup
 	 * @var array
@@ -485,12 +491,13 @@ class Module extends \yii\base\Module
         $filePath = $path . DIRECTORY_SEPARATOR . $database . '.sql';
 
         exec(sprintf(
-            'mysqldump --user=%s --password=%s --host=%s %s > %s 2> /dev/null',
+            'mysqldump --user=%s --password=%s --host=%s %s > %s 2> %s',
             Yii::$app->$database_handle->username,
             Yii::$app->$database_handle->password,
             $this->getHost($database_handle),
             $database,
-            $filePath
+            $filePath,
+            Yii::getAlias($this->pathLog)
         ));
 
         return $filePath;
